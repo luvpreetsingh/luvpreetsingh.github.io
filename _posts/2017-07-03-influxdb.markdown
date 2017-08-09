@@ -6,8 +6,9 @@ title: Influxdb - Understanding Concepts
 
    ![Influxdb](/assets/influxdb1.jpg)
 
+<br/>
 
-**Influxdb** is the coolest Time Series Database in the market and is the hottest trend to follow. Every data is Time Driven. It is designed to store millions and tens of millions of lines of data. Here, I will not be emphasizing on the need of Time Series Databases, but I will rather try to explain the architecture of Influxdb and it's key concepts, with the help of some examples.
+**Influxdb** is the coolest Time Series Database in the market and is the hottest trend to follow. Every data is Time Driven. It is designed to store millions and tens of millions of lines of data. Here, I will not be emphasizing on the need of Time Series Databases, but I will rather try to explain the architecture of Influxdb and it's key concepts, with the help of some examples. If you want to know what are Time Series Databases, <a href="https://en.wikipedia.org/wiki/Time_series_database">click Here</a>.
 
 Influxdb has been defined as the best approach to Time Series Data. It has a query language like SQL. It is written in GO, so does not require any external dependencies during installation.
 
@@ -27,9 +28,11 @@ Here is a sample of data I will be using for explanation,
      1493626629063286244  3             8           Iron        LA
      1493626629063286244  5             9           Copper      LA
 
+
 Here, time is the timestamp at which these observations were stored. price is a field giving us the varying price at different timestamps. metal is a tag giving us the name of the metal. I am going to describe fields and tags. 
 
-Fields are made up of field keys and field values. Field keys are the names corresponding to which the field data is stored. Here, field key is price and field values are 2, 4, 5, 4, 6, 7, 3, 5. A Field key is always a string whereas a field value can be anything like string, integer, boolean or float. Field Sets are a combination of all the field keys and field values. Here are all the field sets possible from this data sample,
+ 
+**_Fields_** are made up of field keys and field values. Field keys are the names corresponding to which the field data is stored. Here, field key is price and field values are 2, 4, 5, 4, 6, 7, 3, 5. A Field key is always a string whereas a field value can be anything like string, integer, boolean or float. Field Sets are a combination of all the field keys and field values. Here are all the field sets possible from this data sample,
 
 	price = 2, people = 4
 	price = 4, people = 2
@@ -40,9 +43,12 @@ Fields are made up of field keys and field values. Field keys are the names corr
 	price = 3, people = 8
 	price = 5, people = 9
 	
+
+
 Now, if you have to query for data where price is 3 and people is 8, it will return the data where field set matches. So, this takes a lot of time as it will check every field set. On the large scale, it proves to be a very costly method of querying. Fields contain the data which is not commonly queried. Fields are not indexed, so the queries made on field data are slow. Fields are necessary for storing data in influxdb. If ther is no field, there cannot be any data in influxdb. 
 
-Tags are made up of tag keys and tag values. Tag keys and tag values both store data of type string only. Unlike fields, tags are indexed. Tag key is the name to which they are indexed and tag values are the indexed values. This means that queries performed on tags are much faster than fields and make tags ideal for storing data which is commonly queried. Tags are not necessary for storing data in influxdb, which means you can store data without having any tags, unlike fields which are necessary. Tag sets are the combination of the tag values. Here, tag set is
+
+**_Tags_** are made up of tag keys and tag values. Tag keys and tag values both store data of type string only. Unlike fields, tags are indexed. Tag key is the name to which they are indexed and tag values are the indexed values. This means that queries performed on tags are much faster than fields and make tags ideal for storing data which is commonly queried. Tags are not necessary for storing data in influxdb, which means you can store data without having any tags, unlike fields which are necessary. Tag sets are the combination of the tag values. Here, tag set is
 	
 	metal = Iron	city = NY
 	metal = Iron	city = LA
@@ -50,13 +56,16 @@ Tags are made up of tag keys and tag values. Tag keys and tag values both store 
 	metal = Copper	city = LA
 
 
+
 Tag sets have a serious impact on the database which I will describe later. Another thing to notice is that as tag values are always stored as string, only equality conditional works on them. One cannot perform less than OR greater than queries on tag values.
 
 All the tags and fields and time are contained in a Measurement. Measurement is like a table in RDBMS. Measurement name is the description of the data and they are stored as String. In the sample data, the measurement name is metalprices.
 
-A Retention Policy is the part of InfluxDB’s data structure that describes for how long InfluxDB keeps data. For example, if you need to examine data on daily basis only, you don't need to keep it forever once you have examined it. You can keep it for a month or 2(or whatever suits you) and then discard the data. Retention policies are created on a database. A single measurement can belong to different retention policies. We can create retention policies on a database and write to the same measurement using different retention policies. If no retention policy is created, then data is stored under default retention policy(namely autogen) which stores data for infinite time.
 
-A Series is a collection of retention policies, measurement and tag set. The sample data contains 4 series. Here it is,
+A **_Retention Policy_** is the part of InfluxDB’s data structure that describes for how long InfluxDB keeps data. For example, if you need to examine data on daily basis only, you don't need to keep it forever once you have examined it. You can keep it for a month or 2(or whatever suits you) and then discard the data. Retention policies are created on a database. A single measurement can belong to different retention policies. We can create retention policies on a database and write to the same measurement using different retention policies. If no retention policy is created, then data is stored under default retention policy(namely autogen) which stores data for infinite time.
+
+
+A **_Series_** is a collection of retention policies, measurement and tag set. The sample data contains 4 series. Here it is,
 
 	retention policy	measurement 	tag set
 	autogen			metalprices	metal = Iron    city = NY
@@ -65,11 +74,15 @@ A Series is a collection of retention policies, measurement and tag set. The sam
 	autogen			metalprices	metal = Copper  city = LA
 
 
-A point is series + field set(at the same timestamp) + timestamp. For example,
+
+
+A **_point_** is series + field set(at the same timestamp) + timestamp. For example,
 
 	time		    price	people		metal		city
 	----                -----       ------		-----		----
 	1493626629063286219 2           4               Iron            NY
+
+
 
 Influxdb is not a strucutural database. If you will add a new field OR a new tag, it will simply add new field to the measurement. It will leave the new field/tag empty in the previously stored data. Here is an example,
 
@@ -80,13 +93,15 @@ Influxdb is not a strucutural database. If you will add a new field OR a new tag
 	1493626629063286879 3		7		Iron		LA		USA
 
 
+
 When writing data to Influxdb, the point(series + field set + timestamp) should be unique. If this is not unique, it will simply replace the data by deleting the matching point in the database.
 
-Everything is contained in a Database. A Database in influxdb has the same meaning as a database in RDBMS has.
+Everything is contained in a **Database**. A Database in influxdb has the same meaning as a database in RDBMS has.
+
 
 One last thing I want to explain apart from the basic structure is Series Cardinality.
 
-Series Cardinality is the number of combinations of all the tag values. In the sample data, the number of combinations is 4. Series Cardinality greatly affects the performance of Influxdb. Tags are indexed, so these are loaded and maintained in the main memory. This puts a limit on Influxdb. You cannot store an ever growing number of tags because this will increase the size of the index ultimately consuming more and more main memory. 
+**_Series Cardinality_** is the number of combinations of all the tag values. In the sample data, the number of combinations is 4. Series Cardinality greatly affects the performance of Influxdb. Tags are indexed, so these are loaded and maintained in the main memory. This puts a limit on Influxdb. You cannot store an ever growing number of tags because this will increase the size of the index ultimately consuming more and more main memory. 
 So, tag values are data which are not much dynamic. The dynamic data is to be stored in fields. For this reason, you should design your database schema very carefully as to which data to store as a field and which to store as a tag. A series cardinality of upto tens of thousands is considered okay for a normal system. If your series cardinaltiy is in millions, then you need to expand your main memory.
 
 I hope this post would be helpful for everyone to get an understanding of the structure of Influxdb.
