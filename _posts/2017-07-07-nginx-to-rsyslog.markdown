@@ -4,18 +4,30 @@ date: 2017-07-03 07:00
 title: Sending Nginx logs to Elasticsearch via Rsyslog
 ---
 
-Requirements - Nginx, Rsyslog latest version with modules configured, and elasticsearch.
+**Requirements** - Nginx, Rsyslog latest version with modules configured, and elasticsearch.
+I also suggest you to grab some basics about rsyslog before reading this.
 
-## RSYSLOG INITIAL SETUP - 
+![rsyslog](/assets/rsyslog.jpg)   ![elasticsearch](/assets/elasticsearch.jpg) 
+
+
+
+## RSYSLOG INITIAL SETUP
 
 Rsyslog is a log processor. It does not generate logs but it handles the way they are processed.  
-Rsyslog is installed in the system by default, but it does not come with all the input and output modules installed in it. So, firstly we need to install the modules we need for our use case.    
+Rsyslog is installed in the system by default. But it does not come with all the input and output modules compiled in it. So, firstly we need to install the modules we need for our use case.    
 
-Firstly we will add the rsyslog repository to our system's /etc/apt/sources.list,
+There are 2 modules we are going to need, 
+
+* omleasticsearch - to send logs to elastic
+* mmnormalize - to normalize the log messages into fields
+
+Below are the steps required to add these :-
+
+Firstly we will add the rsyslog repository to our system's `/etc/apt/sources.list`,
 
     $ sudo add-apt-repository ppa:adiscon/v8-stable 
 
-Then update our system cache
+Then update our system cache,
 
     $ sudo apt-get update
 
@@ -23,7 +35,7 @@ Finally, we will install the required modules,
 
     $ sudo apt-get install rsyslog-mmnormalize rsyslog-elasticsearch
 
-By this way, you can add any module you want. I will explain the functioning of these modules later.
+By this way, you can add any module you want. But we only need these 2.
 
 * * *
 
@@ -51,7 +63,7 @@ Then,
 ## CONFIGURING NGINX TO SEND LOGS TO RSYSLOG
 
 
-Nginx can forward logs to rsyslog easily. It can do that by 2 ways, through Unix socket and by UDP.
+Nginx can forward logs to rsyslog easily. It can do that by 2 ways, through Unix socket and by IP socket.
 For that firstly, we have to tell rsyslog to listen to nginx logs via UDP or unix socket.
 
 For that, we have to load the udp and unix socket input modules in rsyslog,
@@ -78,59 +90,125 @@ Second,
 
     access_log syslog:server=/dev/log,facility=local7,tag=nginx,severity=info;
 
-If you do not include the `facility`, `tag` and `severity`, it will send the default valuse. By default these are their values, 
-`facility = local7`, `tag = nginx` and `severity = info` .
+If you do not include the `facility`, `tag` and `severity`, it will send the default values of these properties. By default these are their values, 
+* `facility = local7`
+* `tag = nginx`
+* `severity = info`
 
+If you are wondering what these things are, these are the properties a log message has. Rsyslog judges the logs according to these properties. [Click here](http://www.rsyslog.com/doc/master/configuration/properties.html) to read them in detail.
 
+* * *
 
 ## CONFIGURING RSYSLOG TO SEND LOGS TO ELASTIC 
 
-The `rsyslog-elasticsearch` module we installed earlier is used to send logs to elasticsearch. Elasticsearch takes in data in JSON format. Elasticsearch can store the data accurately only if we send the data from rsyslog in JSON format. To parse our log messages and convert them into JSON fields, we will the module `rsyslog-mmnormalize` module.
+Elasticsearch takes in data only in JSON format. To parse our plain text log messages and convert them into JSON fields, we will use the module `rsyslog-mmnormalize`.
 
-Rsyslog can parse the log data into the JSON format which is required by elasticsearch. It uses the liblognorm library and the mmnormalize module to convert the data into json. The data is then sent to elastic.
+Rsyslog can parse the log data into the JSON format which is required by elasticsearch by using the liblognorm library and the mmnormalize module. The data is then sent to elastic.
 
-It uses custom template and the mmnormalize module.
+A custom template for the data format has to be used. So, we need a new format(JSON) for data which we can easily create by creating a custom template,
 
-template(name="all-json-nginx"
-    type="list"){
- property(name="$!all-json")
- }
+    template(name="all-json-nginx"
+         type="list"){
+     property(name="$!all-json")
+    }
 
-All the fields are passed into the $!all-json variable.
-To only include the selected OR to add more fields, we could do, 
-
-
-template(name=”all-json-nginx” type=”list”){
-    constant(value="{")
-      property(name="timereported" dateFormat="rfc3339" format="jsonf" outname="@timestamp")  # the timestamp
-    constant(value=",")
-      property(name="hostname" format="jsonf" outname="host")  # the host generating stats
-    constant(value=",")
-      property(name="$!all-json" position.from="2")            # finally, we'll add all metrics
-}
-
-Here above, we have added the hostname as extra field.
-
-And here is the parsing through mmnormalize
-
-action(type="mmnormalize"
-  rulebase="/opt/rsyslog/apache.rb"
-)
-
-Remember, by default it parses the message field of a syslog entry. If we want to parse some other field, we can pass it as a variable=hostname, or any other property we want to name, in the action directive.
+All the fields parsed are passed into the `$!all-json` variable.
+To add more fields, we could do, 
 
 
-Here, rulebase is the file where parsing rules are set, here below are the contents of that file, 
+    template(name=”all-json-nginx” type=”list”){
+        constant(value="{")
+          property(name="timereported" dateFormat="rfc3339" format="jsonf" outname="@timestamp")  # the timestamp
+        constant(value=",")
+          property(name="hostname" format="jsonf" outname="host")  # the host generating stats
+        constant(value=",")
+          property(name="$!all-json" position.from="2")            # finally, we'll add all metrics
+    }
 
-rule=tag-sent-by-nginx(default=nginx): %remote_addr:word% %ident:word% %auth:word% [%@timestamp:char-to:]%] "%method:word% %request:word% HTTP/%httpversion:float% "%status:number% %bytes_sent:number% "%referrer:char-to:"%" "%agent:char-to:"%"%blob:rest%
-The patterns are by default included in the liblognorm library.
+Here above, we have added the hostname as extra field. Adding hostname can be useful if you are handling logs from multiple servers.
+
+We have declared our custom template. Now, we need to write a parsing rule which can parse our data and make different fields using it.
+Here, rulebase is the file where parsing rules are set, here below are the contents of that file,
+
+    rule= api: %remote_addr:word% %ident:word% %auth:word% [%@timestamp:char-to:]%] "%method:word% %request:word% HTTP/%httpversion:float% "%status:number% %bytes_sent:number% %requesttime:float% "%referrer:char-to:"%" "%agent:char-to:"%"%blob:rest%
+
+Here is a log entry which is divided into fields perfectly according to the above rules,
+
+     xx.xx.xx.xx - - [2017-08-29T15:22:28+05:30] "GET /api/v1/fleet/fleet_bookings/?booking_type=checkout HTTP/1.1 "200 12 0.609 "-" "python-requests/2.9.1" "-"
+
+We have made rule for the normalization of logs. Now, we need to tell rsyslog to perform this normalization action. This is how we do it,
+
+    action(type="mmnormalize"
+      rulebase="/opt/rsyslog/apache.rb"
+    )
+
+Remember, by default it parses the message field of a syslog log entry. If we want to parse some other field, we can pass it as a parameter, `variable=hostname`, or any other property we want to name, in the action directive.
 
 
-We can pass the rule in here also, but that makes the code unclean and causes confusion.
+The rule here will be hard to understand if you are viewing it for the first time. It works in the same way as logstash filter plugin. Here are links where you can read more about them.
+* [http://www.liblognorm.com/files/manual/configuration.html#date-rfc3164](http://www.liblognorm.com/files/manual/configuration.html#date-rfc3164)
+* [http://www.liblognorm.com/files/manual/sample_rulebase.html](http://www.liblognorm.com/files/manual/sample_rulebase.html)
 
-When elastic is ON, the data will be sent to it without any difficult.
 
-When elastic is OFF, then data will be queued in the action queue. When elastic again will be ON, then data will be sent to elastic.
+Now, we have achieved the following pieces, 
+
+* Configured Nginx to send logs to rsyslog
+* Written the parsing rule to parse messages
+
+The next and final piece of the puzzle is to send these logs to elasticsearch.
+
+We will use the `omelasticsearch` module. This is the action which will be performed by rsyslog,
+
+    action(type="omelasticsearch"
+      template="all-json"  
+      searchIndex="testing-logs"
+      searchType="logs"
+      server="127.0.0.1"
+      serverport="9200"
+      uid="user"
+      pwd="pass"
+      bulkmode="on"  
+      action.resumeretrycount="-1" 
+      queue.type="LinkedList"      
+      queue.highwatermark="40000"  
+      queue.spoolDirectory="/var/spool/rsyslog/queues"
+      queue.filename="rsyslog-testing-logs"
+      queue.lowwatermark="5000" 
+      queue.maxdiskspace="100m" 
+      queue.size="50000"    
+      queue.dequeuebatchsize="1000" 
+      queue.saveonshutdown="on"
+    )
+
+Here is the breakdown of this action, 
+
+* template = Name of the custom template earlier declared
+* searchIndex = Index in elasticsearch where to store the data
+* searchType = Type of the document
+* server = address of server where elasticsearch is running
+* serverport = port of server on which elasticsearch is running
+* bulkmode = to use the elasticsearch bulk API
+* action.resumeretrycount = retry if it fails to send due to some reason
+
+The `uid` and `pwd` options are only to be used if you have used authentication on elastic side.
+
+* uid = username 
+* pwd = password
+
+These are the basic things you need to understand. When elastic server is ON, the data will be sent to it without any difficulty.
+
+
+You have your all the pieces to solve the puzzle. Now put them in order to solve it. Create a file in `/etc/rsyslog.d/` folder ending in **.conf**. [Here is the complete file in correct order](https://gist.github.com/luvpreetsingh/a863ad26a2423b5a7dde755949b9a5e9).
+
+
+#### NOTE ON QUEUES :
+
+I have used queues here. Queues provide reliability to our flow of logging data. Logs are really important data for system debugging. And loss of these logs can make life hard at times. So, to avoid data loss, queues are really helpful. If anyday due to any reason, when elastic is OFF OR network is causing issues, then data will be queued in the queue. When things go normal again, then data will be sent to elastic. This is really important and easy to implement.
+
+Queues are a really important and a vast topic for this post. I suggest you read them where they are explained best i.e, by rsyslog author himself.
+ 
+* [Queue Analogy](http://www.rsyslog.com/doc/v8-stable/whitepapers/queues_analogy.html)
+* [Queue Concepts](http://www.rsyslog.com/doc/v8-stable/concepts/queues.html)
 
 <!---
 Extra Plugins -
