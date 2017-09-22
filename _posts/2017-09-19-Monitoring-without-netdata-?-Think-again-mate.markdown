@@ -145,3 +145,14 @@ I hope that like Netdata, this blog post also proves to helpful. If you found it
 
 <script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
 <script type="IN/Share" data-url="https://luvpreetsingh.github.io/Monitoring-without-netdata-Think-again-mate/" data-counter="top"></script>
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.10&appId=388449058240621";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<div class="fb-share-button" data-href="https://luvpreetsingh.github.io/Monitoring-without-netdata-Think-again-mate/" data-layout="button_count" data-size="large" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fluvpreetsingh.github.io%2FMonitoring-without-netdata-Think-again-mate%2F&amp;src=sdkpreparse">Share</a></div>
