@@ -1,12 +1,12 @@
 ---
 layout: post
 date: 2017-09-19 07:00
-title: Monitoring without Netdata ? Think again mate.
+title: Monitoring without Netdata? Think again mate.
 ---
 
 Before you read this, think for a moment, how you are monitoring your OS, applications, databases and web-servers.
 
-Some months ago, my company asked me to built a system for monitoring the system and applications. There were many tools available like nagios, dynatrace, munin and the new TICK stack. I started these, and worked on them for few weeks. Made a system using these. To be honest, I struggled while doing this. The struggle was mainly due to 2 reasons, but only one was mine(I had no experience in this area). The other struggle was with these tools. Complex installation processes, tool documentation problems, configuring databases for their working and a lot of plug-in and plug-out work etc. Monitoring systems and applications is important, but if it is taking too much of your time and effort, then you are doing it the wrong way.
+Some months ago, my company asked me to build a system for monitoring the system and applications. There were many tools available like nagios, dynatrace, munin and the new TICK stack. I started these, and worked on them for few weeks. Made a system using these. To be honest, I struggled while doing this. The struggle was mainly due to 2 reasons, but only one was mine(I had no experience in this area). The other struggle was with these tools. Complex installation processes, tool documentation problems, configuring databases for their working and a lot of plug-in and plug-out work etc. Monitoring systems and applications is important, but if it is taking too much of your time and effort, then you are doing it the wrong way.
 
 Then somebody over stackoverflow recommended me Netdata. With all respect to earlier mentioned tools, I never saw anything like Netdata before. At first glance, It seemed magical. I thought that this is something new in monitoring field for the DevOps. But slowly I realized(again, no disrespect to the other tools) that this is the tool which exactly fits the basic DevOps' cultural philosphies. A tool so agile, flexible, smooth, electric, beautiful and reliable that it has become irreplacable and has made hard to think of DevOps without Netdata.
 
@@ -138,9 +138,9 @@ Many data modes are available for sending the data to backends. You can choose t
 
 I have successfully used InfluxDB as a backend and it works very smoothly. Then you can use Grafana to see the historical netdata metrics by adding influxdb as a data-source in Grafana. [Here is a blog](https://blog.hda.me/2017/01/09/using-netdata-with-influxdb-backend.html) if you need help setting it.
 
-Netdata is a perfect modern day tool made for DevOps and Sysadmins. It has made the life of DevOps and Sysadmins easy in a way. It is only going to get better as it has got donations from various companies recently. I strongly recommend it.
+Netdata is a perfect modern day tool made for DevOps and Sysadmins. It has made the life of DevOps and Sysadmins easy in a way. It is only going to get better. It has got donations from various companies recently, so, expect more improvements. I strongly recommend it.
 
-I hope that like Netdata, this blog post also proves to helpful. If you found it worth reading, don't forget to share it. 
+I hope that like Netdata, this blog post also proves to be helpful. If you found it worth reading, don't forget to share it. 
 
 
 <script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
