@@ -6,18 +6,18 @@ title: Monitoring without Netdata? Think again mate.
 
 Before you read this, think for a moment, how you are monitoring your OS, applications, databases and web-servers.
 
-Some months ago, my company asked me to build a system for monitoring the system and applications. There were many tools available like nagios, dynatrace, munin and the new TICK stack. I started these, and worked on them for few weeks. Made a system using these. To be honest, I struggled while doing this. The struggle was mainly due to 2 reasons, but only one was mine(I had no experience in this area). The other struggle was with these tools. Complex installation processes, tool documentation problems, configuring databases for their working and a lot of plug-in and plug-out work etc. Monitoring systems and applications is important, but if it is taking too much of your time and effort, then you are doing it the wrong way.
+Some months ago, my company asked me to build a system for monitoring the system and applications. There were many tools available like Nagios, Dynatrace, Munin and the new TICK stack. I started these and worked on them for few weeks. Made a system using these. To be honest, I struggled while doing this. The struggle was mainly due to 2 reasons, but only one was mine(I had no experience in this area). The other struggle was with these tools. Complex installation processes, tool documentation problems, configuring databases for their working and a lot of plug-in and plug-out work etc. Monitoring systems and applications is important, but if it is taking too much of your time and effort, then you are doing it the wrong way.
 
-Then somebody over stackoverflow recommended me Netdata. With all respect to earlier mentioned tools, I never saw anything like Netdata before. At first glance, It seemed magical. I thought that this is something new in monitoring field for the DevOps. But slowly I realized(again, no disrespect to the other tools) that this is the tool which exactly fits the basic DevOps' cultural philosphies. A tool so agile, flexible, smooth, electric, beautiful and reliable that it has become irreplacable and has made hard to think of DevOps without Netdata.
+Then somebody over StackOverflow recommended me Netdata. With all respect to earlier mentioned tools, I never saw anything like Netdata before. At first glance, It seemed magical. I thought that this is something new in monitoring field for the DevOps. But slowly I realized(again, no disrespect to the other tools) that this is the tool which exactly fits the basic DevOps' cultural philosophies. A tool so agile, flexible, smooth, electric, beautiful and reliable that it has become irreplaceable and has made hard to think of DevOps without Netdata.
 
 
 # **Netdata**
 
-As said on it's github wiki, Netdata is a scalable, distributed, real-time, performance and health monitoring solution for Linux, FreeBSD and MacOS.
+As said on it's Github wiki, Netdata is a scalable, distributed, real-time, performance and health monitoring solution for Linux, FreeBSD and MacOS.
 
 Netdata is more like a universal monitoring tool. It is a complete package. It has Data Collection + Data Storage + Data Visualization, all in it.
 
-Netdata provides real-time monitoring of your system and applications by collecting metrics from them. It's architecture is fairly simple. It uses statsd system to collect metrics from your system. The statsd system and your applications connect through a UDP connection. Netdata does not uses any kind of Disk space for storing these metrics. After the metrics are collected and processed by statsd, they are sent to RAM(by default). Yes, RAM. Netdata comes with a built-in web-server to display all your metrics with the help of beautiful dashboards.
+Netdata provides real-time monitoring of your system and applications by collecting metrics from them. Its architecture is fairly simple. It uses statsd system to collect metrics from your system. The statsd system and your applications connect through a UDP connection. Netdata does not use any kind of Disk space for storing these metrics. After the metrics are collected and processed by statsd, they are sent to RAM(by default). Yes, RAM. Netdata comes with a built-in web-server to display all your metrics with the help of beautiful dashboards.
 
 <br/>
 
