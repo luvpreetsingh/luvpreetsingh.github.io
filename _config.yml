@@ -16,7 +16,7 @@
 title: Luvpreet's Blog
 #email: s.luvpreet33@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
-  This is the site for Luvpreet's Blog, hosted via github pages.
+  This is a simple site for Luvpreet's Blog, hosted via github pages.
 #baseurl: "/blog" # the subpath of your site, e.g. /blog
 #url: "http://luvtech.com" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: luvpreet33
