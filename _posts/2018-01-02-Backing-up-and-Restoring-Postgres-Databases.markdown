@@ -1,12 +1,13 @@
 ---
 layout: post
-date: 2018-01-03 07:00
-title: Postgres Backing up and Restoring
+date: 2018-01-02 07:00
+title: Backing up and Restoring Postgres Databases
 ---
 
 Postgres is the most advanced open source Relational Database out there. Thousands of companies use it to store their valuable data. So, it is really important to backup this data in order to prevent any kind of data loss. This post will describe how to backup and restore postgres databases.
 
 # **Backing up the database**
+
 
 Postgres provides a utility called `pg_dump` which is used to create database dumps. It dumps the database into a plain text file, which can then be used to restore the database. `pg_dump` is a simple postgresql client which works by connecting to the postgresql server.
 
@@ -34,6 +35,7 @@ Adding more to this specification, you can also get the dump of only a single ta
 
 Remember that it creates a snapshot of the database at the time you run this command. Any further changes will not be included in this snapshot. Therefore, the databases must be backed up regularly.
 
+
 # **Restoring the database dump**
 
 The data-dump created by `pg_dump` is restored with the help of `psql`. 
@@ -56,9 +58,8 @@ When using `--single-transaction`, if a error happens, it will rollback the whol
 
 # **Conclusion**
 
+
 The `pg_dump` and `psql` is a fairly simple, easy and efficient method to create and restore backups for the databases. This method is more effective than the file system Recovery method. It is simpler than the Point-in-Time Recovery method and is usually suitable for most of the scenarios until and unless your system is really destroyed.
 
 The databases must be backed up regularly and the dumps must be tested regularly. 
-
-<hr>
 
